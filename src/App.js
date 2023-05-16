@@ -1,25 +1,29 @@
 import './App.css';
 import io from 'socket.io-client'
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 const socket = io.connect('http://localhost:3001')
 
 function App() {
 
+  const [message, setMessage] = useState("");
+  const [messageReceived, setMessageReceived] = useState("");
+  const sendMessage = () => {
+      socket.emit("send_message", { message })
+  }
+
   useEffect(()=>{
     socket.on('receive_message', (data)=> {
-      alert(data.message)
+      setMessageReceived(data.message)
     })
 
   }, [socket])
 
-  const sendMessage = () => {
-      socket.emit("send_message", {message: "hello"})
-  }
-
   return (
     <div className="App">
-        <input type="text" placeholder="Message"/>
+        <input type="text" placeholder="Message" onChange={(event) => setMessage(event.target.value)}/>
         <button onClick={sendMessage}>Send</button>
+        <h2>Messages:</h2>
+        {messageReceived}
     </div>
   );
 }
