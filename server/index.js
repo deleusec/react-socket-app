@@ -34,10 +34,13 @@ io.on("connection", (socket) => {
     
   });
 
-  socket.on("save_pseudo", (pseudo) => { 
-    socket.pseudo = pseudo.userPseudo;
+  socket.on("save_user_infos", (data) => { 
+    // Ajouter les infos au socket de l'utilisateur
+    socket.pseudo = data.pseudo;
+    socket.gender = data.gender;
+    socket.age = data.age;
 
-    users.push({ id: socket.id, pseudo: socket.pseudo });
+    users.push({ id: socket.id, pseudo: socket.pseudo, gender: socket.gender, age : socket.age });
     io.sockets.emit("new_user", users);
     /*
     // Lire le contenu du fichier JSON existant
