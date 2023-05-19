@@ -7,20 +7,39 @@ const fs = require("fs");
 // socket.io
 const io = new Server(server, {
   cors: {
-    origin: "http://192.168.1.6:3000",
+    origin: "http://localhost:3000",
     methods: ["GET", "POST"],
     allowedHeaders: ["my-custom-header"],
     credentials: true,
   },
 });
 
-io.on("connection", (socket) => {
-  console.log('a user connected');
+let users = [];
 
-  socket.on("save_pseudo", (pseudo) => {
+io.on("connection", (socket) => {
+  io.sockets.emit("new_user", users);
+
+
+  socket.on("disconnect", () => {
+    const usersFiltres = users.filter((element) => {
+      if (element.id !== socket.id) {
+        return element;
+      }
+    });
+
+  
+    users = usersFiltres
+
+    io.sockets.emit("delete_user", usersFiltres);
     
+  });
+
+  socket.on("save_pseudo", (pseudo) => { 
     socket.pseudo = pseudo.userPseudo;
 
+    users.push({ id: socket.id, pseudo: socket.pseudo });
+    io.sockets.emit("new_user", users);
+    /*
     // Lire le contenu du fichier JSON existant
     fs.readFile("./data/users.json", "utf-8", (err, data) => {
       if (err) {
@@ -47,13 +66,9 @@ io.on("connection", (socket) => {
         console.log("Pseudo ajouté avec succès dans le fichier JSON.");
       });
     });
-  });
-
-  socket.on('disconnect', () => {
-    console.log('user disconnected');
+*/
   });
 });
-
 
 server.listen(3001, () => {
   console.log("SERVER IS RUNNING");
